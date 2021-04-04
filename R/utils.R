@@ -88,3 +88,83 @@ plot_year <- function(ngram_df, start=1800, end=2000) {
     theme(legend.title=element_blank()) +
     theme(axis.title = element_text(family = "Arial", color="#666666", face="bold", size=10))
 }
+
+# This function extracts and cleans citation data from Johnson's dictionary,
+# which are stored as html files.
+
+extract_names <- function(x){
+  html <- xml2::read_html(x)
+  names <- rvest::html_text(rvest::html_nodes(html, 'span')) %>%
+    data.frame(author = .) %>%
+    filter(str_detect(author, "[a-z]") ==T) %>%
+    mutate(author = str_squish(author)) %>%
+    filter(str_detect(author, "^[A-Z][a-z][a-z]+|[A-Z]'[A-Z][a-z][a-z]+") ==T) %>%
+    mutate(author = ifelse(str_detect(author, "^Shak"), "Shakespeare", author)) %>%
+    mutate(author = ifelse(str_detect(author, "peare$"), "Shakespeare", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^Lear$"), "Shakespeare", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^Othello$"), "Shakespeare", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^Tempest$"), "Shakespeare", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^Cymbeline$"), "Shakespeare", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^Cymb$"), "Shakespeare", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^Macbeth$"), "Shakespeare", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^Gen$"), "Genesis", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^Gen\\.$"), "Genesis", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^Deut$"), "Deuteronomy", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^Ezek$"), "Ezekiel", author)) %>%filter(author != "Sir") %>%
+    mutate(author = ifelse(str_detect(author, "^Exod$"), "Exodus", author)) %>%filter(author != "Sir") %>%
+    mutate(author = ifelse(str_detect(author, "^Isa$"), "Isaiah", author)) %>%filter(author != "Sir") %>%
+    mutate(author = ifelse(str_detect(author, "^Psalm$"), "Psalms", author)) %>%filter(author != "Sir") %>%
+    mutate(author = ifelse(str_detect(author, "^Jer$"), "Jeremiah", author)) %>%filter(author != "Sir") %>%
+    mutate(author = ifelse(str_detect(author, "^Eccl$"), "Ecclesiastes", author)) %>%filter(author != "Sir") %>%
+    mutate(author = ifelse(str_detect(author, "^Lev$"), "Leviticus", author)) %>%filter(author != "Sir") %>%
+    mutate(author = ifelse(str_detect(author, "^Revel$"), "Revelations", author)) %>%filter(author != "Sir") %>%
+    mutate(author = ifelse(str_detect(author, "^Chron$"), "Chronicles", author)) %>%filter(author != "Sir") %>%
+    mutate(author = ifelse(str_detect(author, "^Cor$"), "Corinthians", author)) %>%filter(author != "Sir") %>%
+    mutate(author = ifelse(str_detect(author, "^Millon$"), "Milton", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^Milion$"), "Milton", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^Swifi$"), "Swift", author)) %>%
+    filter(author != "Err") %>%
+    filter(author != "Hist") %>%
+    filter(author != "Ess") %>%
+    filter(author != "Serm") %>%
+    filter(author != "Sat.") %>%
+    filter(author != "Gov.") %>%
+    filter(author != "Rev.") %>%
+    filter(author != "Dec.") %>%
+    filter(author != "The") 
+  return(names)
+}
+
+# Extract head words from Websters
+extract_headwords <- function(x){
+  
+  doc <- read_file(x)
+  doc<- doc %>% str_squish() %>% str_replace_all("</p>\\s+<p>", "</p><p>")
+  doc <- doc %>% str_split("</p><p>") %>% unlist()
+  
+  nodes <-  doc[grepl("<source>1913 Webster</source>", doc)]
+  
+  words <- lapply(nodes, function(x) str_extract_all(x, "<ent>.*?</ent>"))
+  words <- words %>% unlist()
+  words <- words[!is.na(words)]
+  words <- words %>% str_remove_all("<.*?>") %>% tolower() %>% unique()
+  
+  return(words)
+}
+
+# Extract cited authors from Websters
+extract_authors <- function(x){
+  
+  doc <- read_file(x)
+  doc<- doc %>% str_squish() %>% str_replace_all("</p>\\s+<p>", "</p><p>")
+  doc <- doc %>% str_split("</p><p>") %>% unlist()
+  
+  nodes <-  doc[grepl("<source>1913 Webster</source>", doc)]
+  
+  authors <- lapply(nodes, function(x) str_extract_all(x, "<q?au>.*?</q?au>"))
+  authors <- authors %>% unlist()
+  authors <- authors[!is.na(authors)]
+  authors <- authors %>% str_remove_all("<.*?>") %>% tolower()
+  return(authors)
+}
+
