@@ -1,9 +1,9 @@
 
 library(tidyverse)
 
-z_subs <- read_csv("/Users/davidwestbrown/SpiderOak Hive/Dictionary Chapter/dictionary_data/zombadings_subs.csv")
+z_subs <- read_csv("data/data_tables/zombadings_subs.csv")
 
-bak_dict <- read_csv("/Users/davidwestbrown/SpiderOak Hive/Dictionary Chapter/dictionary_data/baklese_dictionary.csv")
+bak_dict <- read_csv("data/data_tables/baklese_dictionary.csv")
 
 bak_tks <- bak_dict$Baklese %>%
   str_split(",") %>%
