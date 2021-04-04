@@ -1,1 +1,2 @@
-# dictionary_as_data
+## The Dictionary as Data
+This repository contains all of code (as R scripts) and data used to produce the quantitative analysis and visualizations for my contribution to the *Cambridge Handbook of the Dictionary*. 
