@@ -116,7 +116,7 @@ for_plotting <- scores %>%
   mutate(fill_color = ifelse(from_blount == T, 1, 2)) %>%
   mutate(fill_color = ifelse(letter_break == T & from_blount == F, 3, fill_color)) %>%
   mutate(fill_color = as.factor(fill_color)) %>%
-  mutate(X = rep(seq(1:100), length.out=nrow(df))) %>%
+  mutate(X = rep(seq(1:100), length.out=nrow(seq_phillips))) %>%
   group_by(X) %>% mutate(Y = sequence(n())) %>% ungroup
 
 # calculate the percent of 'cribbed' entries from blount in phillips
