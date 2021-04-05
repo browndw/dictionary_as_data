@@ -1,0 +1,1 @@
+Inopacous (inopacus) open, not shadowed.

@@ -1,0 +1,1 @@
+Multiplicable (multiplicabilis) that may be multiplied or augmented.

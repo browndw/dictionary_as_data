@@ -1,0 +1,1 @@
+Golden number, a number which changeth every year, by adding one to the Golden number of the year going before, until it grow as high as Nineteen, and then the Golden number returns to one again. For example, This year 1659 the Golden number is seven, the next year therefore it will be eight, &c. This Golden number was devised to find out the Feast of Easter. See Cycle.

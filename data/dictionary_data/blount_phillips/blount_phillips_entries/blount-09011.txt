@@ -1,0 +1,1 @@
+Revocable (revocabilis) that may be revoked or called again.

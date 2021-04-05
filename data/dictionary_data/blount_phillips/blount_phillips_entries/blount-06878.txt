@@ -1,0 +1,1 @@
+Navigable (navigabilis) where ships may pass, sailable, that will bear a ship.

@@ -1,0 +1,1 @@
+Hymnigrapher (hymnigraphus) a writer of Hymns.

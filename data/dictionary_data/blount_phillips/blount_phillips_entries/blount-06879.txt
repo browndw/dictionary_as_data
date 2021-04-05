@@ -1,0 +1,1 @@
+Navigerous (naviger) that will bear a Vessel or Ship.

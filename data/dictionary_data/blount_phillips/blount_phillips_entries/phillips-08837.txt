@@ -1,0 +1,1 @@
+Partile aspect, when two Planets are both in the same number of degrees and minutes either by conjunction or aspect.

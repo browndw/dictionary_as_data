@@ -1,0 +1,1 @@
+Declinator, a Mathematical Instrument, to take the declinations of the Planets.

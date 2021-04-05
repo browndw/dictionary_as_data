@@ -1,0 +1,1 @@
+Expectable (from expecto) that may be expected or looked for.
