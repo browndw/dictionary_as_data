@@ -130,6 +130,5 @@ for_plotting %>%
   theme_void() +
   theme(legend.position = "none")
 
-ggsave("/Users/user/Downloads/blount_in_phillips.png", plot=p1, width=6.5, height=3.5, dpi=300)
 
 
