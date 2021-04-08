@@ -214,6 +214,7 @@ websters_cited <- function(x){
   
   authors <- lapply(nodes, function(x) str_extract_all(x, "<q?au>.*?</q?au>"))
   authors <- authors %>% unlist()
+  words <- str_split("(?<=[a-z-][a-z-]\\.) (?=[A-Z][a-z-])") %>% unlist()
   authors <- authors[!is.na(authors)]
   authors <- authors %>% str_remove_all("<.*?>") %>% tolower()
   return(authors)
