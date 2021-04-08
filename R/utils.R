@@ -214,9 +214,30 @@ websters_cited <- function(x){
   
   authors <- lapply(nodes, function(x) str_extract_all(x, "<q?au>.*?</q?au>"))
   authors <- authors %>% unlist()
-  words <- str_split("(?<=[a-z-][a-z-]\\.) (?=[A-Z][a-z-])") %>% unlist()
+  authors <- authors %>% str_split("(?<=[a-z-][a-z-]\\.) (?=[A-Z][a-z-])") %>% unlist()
   authors <- authors[!is.na(authors)]
   authors <- authors %>% str_remove_all("<.*?>") %>% tolower()
+  authors <- authors %>% unlist() %>% unname() %>% table() %>% as_tibble() %>% 
+    rename_with(~ gsub(".", "author", .x, fixed = TRUE)) %>% 
+    mutate(author = str_remove(author, ".$")) %>%
+    mutate(author = str_remove(author, "^[[:punct:]]")) %>%
+    mutate(author = str_remove_all(author, "\\(.*?\\)")) %>%
+    mutate(author = str_remove_all(author, "\\[.*?\\]")) %>%
+    mutate(author = str_remove_all(author, "\\(.*?$")) %>%
+    mutate(author = str_squish(author)) %>%
+    mutate(author = ifelse(str_detect(author, "\\. \\d+"), "bible", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^\\d"), "bible", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^shak"), "shakespeare", author)) %>%
+    mutate(author = textclean::replace_html(author)) %>%
+    mutate(author = str_to_title(author)) %>%
+    mutate(author = ifelse(author == "L'estrange", "L'Estrange", author)) %>%
+    mutate(author = ifelse(author == "Sir T. Browne", "Browne", author)) %>%
+    mutate(author = ifelse(author == "Sir P. Sidney", "Sidney", author)) %>%
+    group_by(author) %>%
+    summarize(n = sum(n)) %>%
+    arrange(-n) %>%
+    rename(n_websters = n)
+  
   return(authors)
 }
 
