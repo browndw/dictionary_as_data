@@ -23,6 +23,13 @@ willinsky <- read_csv("data/data_tables/willinsky_counts.csv") %>%
 # Calculate the mean error (assuming Willisky's counts are accurate)
 mean(willinsky$error)
 
+# Check the row for Bible citations
+cited_johnson[which(cited_johnson$author == "Bible"), ]
+
+# Calculate an adjusted value for Bible citations
+cited_johnson[which(cited_johnson$author == "Bible"), 3]*(1 + abs(mean(willinsky$error)/100))
+
+
 # Get the paths to the files containing Webster's Unabridged dictionary
 websters_files <- list.files("data/dictionary_data/websters/websters_1913/xml_files", pattern = "_\\w.xml", full.names = T)
 
@@ -38,7 +45,7 @@ cited_websters_1913 <- bind_rows(cited_websters_1913) %>%
 # Format and tally citations
 websters_1844 <- read_csv("data/dictionary_data/websters/websters_1841.csv")
 
-cited_websters_1844 <- str_extract(websters_1841$definition, "– [A-Z].*?\\.$") %>%
+cited_websters_1844 <- str_extract(websters_1844$definition, "– [A-Z].*?\\.$") %>%
   str_split(" – ") %>%
   unlist() %>%
   str_subset("Dict.|Cyc.|Encyc.", negate = T) %>%
