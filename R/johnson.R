@@ -36,22 +36,21 @@ cited_websters_1913 <- bind_rows(cited_websters_1913) %>%
   rownames_to_column("rank_websters_2")
 
 # Format and tally citations
-websters_1841 <- read_csv("data/dictionary_data/websters/websters_1841.csv")
+websters_1844 <- read_csv("data/dictionary_data/websters/websters_1841.csv")
 
-cited_websters_1841 <- str_extract(websters_1841$definition, "– [A-Z].*?\\.$") %>%
+cited_websters_1844 <- str_extract(websters_1841$definition, "– [A-Z].*?\\.$") %>%
   str_split(" – ") %>%
   unlist() %>%
+  str_subset("Dict.|Cyc.|Encyc.", negate = T) %>%
   str_split("(?<=[a-z-][a-z-]\\.) (?=[A-Z][a-z-])") %>%
   unlist() %>%
   data.frame(author = .) %>%
-  filter(!is.na(author)) %>%
   mutate(author = str_remove(author, "– ")) %>%
   mutate(author = ifelse(str_detect(author, " [i|v|x|l|c|d|m]+(\\.|,)"), "Bible", author)) %>%
   mutate(author = str_remove(author, "'s .*?$")) %>%
   mutate(author = str_remove(author, "\\.$")) %>%
   mutate(author = ifelse(str_detect(author, "Shak"), "Shakespeare", author)) %>%
   mutate(author = ifelse(str_detect(author, "^Brown$"), "Browne", author)) %>%
-  filter(!str_detect(author, "^Dict|^Cyc|Encyc")) %>%
   filter(str_count(author, " ") < 4) %>%
   group_by(author) %>%
   tally() %>%
@@ -60,9 +59,12 @@ cited_websters_1841 <- str_extract(websters_1841$definition, "– [A-Z].*?\\.$")
   rownames_to_column("rank_websters_1")
 
 # Combine counts into a single dataframe
-cited_all <- full_join(cited_johnson, cited_websters_1841, by = "author") %>%
-  select(author, n_websters_1, n_johnson, rank_websters_1, rank_johnson) %>%
+cited_all <- full_join(cited_johnson, cited_websters_1844, by = "author") %>%
+  full_join(cited_websters_1913) %>%
+  select(author, n_websters_1, n_websters_2, n_johnson, rank_websters_1, rank_websters_2, rank_johnson) %>%
   mutate(rank_johnson = as.numeric(rank_johnson)) %>%
-  mutate(rank_websters_1 = as.numeric(rank_websters_1))
+  mutate(rank_websters_1 = as.numeric(rank_websters_1)) %>%
+  mutate(rank_websters_2 = as.numeric(rank_websters_2)) %>%
+  arrange(rank_websters_1)
 
 
