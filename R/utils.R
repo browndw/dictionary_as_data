@@ -253,6 +253,7 @@ websters_cited <- function(x){
     mutate(author = ifelse(author == "L'estrange", "L'Estrange", author)) %>%
     mutate(author = ifelse(author == "Sir T. Browne", "Browne", author)) %>%
     mutate(author = ifelse(author == "Sir P. Sidney", "Sidney", author)) %>%
+    mutate(author = ifelse(author == "Sir W. Scott", "Scott", author)) %>%
     group_by(author) %>%
     summarize(n = sum(n)) %>%
     arrange(-n)
