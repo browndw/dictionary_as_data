@@ -93,12 +93,21 @@ plot_year <- function(ngram_df, start=1800, end=2000) {
 # which are stored as html files.
 
 johnson_cited <- function(x){
-  html <- xml2::read_html(x)
-  names <- rvest::html_text(rvest::html_nodes(html, 'span')) %>%
+  names <- rvest::read_html(x) %>%
+    rvest::html_nodes('body') %>%
+    rvest::html_nodes('span') %>%
+    rvest::html_text() %>%
     data.frame(author = .) %>%
-    filter(str_detect(author, "[a-z]") ==T) %>%
     mutate(author = str_squish(author)) %>%
+    mutate(author = textclean::replace_curly_quote(author)) %>%
+    mutate(author = stringi::stri_trans_general(author, "Latin-ASCII")) %>%
+    mutate(test = lag(str_detect(author, "'s|s'"), default = F)) %>%
+    filter(test == F) %>%
+    select(author) %>%
+    mutate(author = str_remove(author, "'$")) %>%
+    filter(str_detect(author, "[a-z]") ==T) %>%
     filter(str_detect(author, "^[A-Z][a-z][a-z]+|[A-Z]'[A-Z][a-z][a-z]+") ==T) %>%
+    mutate(author = str_remove(author, "'s$")) %>%
     mutate(author = ifelse(str_detect(author, "^Shak"), "Shakespeare", author)) %>%
     mutate(author = ifelse(str_detect(author, "peare$"), "Shakespeare", author)) %>%
     mutate(author = ifelse(str_detect(author, "^Lear$"), "Shakespeare", author)) %>%
@@ -107,30 +116,72 @@ johnson_cited <- function(x){
     mutate(author = ifelse(str_detect(author, "^Cymbeline$"), "Shakespeare", author)) %>%
     mutate(author = ifelse(str_detect(author, "^Cymb$"), "Shakespeare", author)) %>%
     mutate(author = ifelse(str_detect(author, "^Macbeth$"), "Shakespeare", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^Paradise$"), "Milton", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^Fairy$"), "Spenser", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^Fairie$"), "Spenser", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^Aeneid$"), "Dryden", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^Naturall$"), "Bacon", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^Spectator$"), "Addison", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^Odyssey$"), "Pope", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^Sermons$"), "South", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^Vulgar$"), "Brown", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^Farrier"), "Wallace", author)) %>%
     mutate(author = ifelse(str_detect(author, "^Gen$"), "Genesis", author)) %>%
     mutate(author = ifelse(str_detect(author, "^Gen\\.$"), "Genesis", author)) %>%
     mutate(author = ifelse(str_detect(author, "^Deut$"), "Deuteronomy", author)) %>%
-    mutate(author = ifelse(str_detect(author, "^Ezek$"), "Ezekiel", author)) %>%filter(author != "Sir") %>%
-    mutate(author = ifelse(str_detect(author, "^Exod$"), "Exodus", author)) %>%filter(author != "Sir") %>%
-    mutate(author = ifelse(str_detect(author, "^Isa$"), "Isaiah", author)) %>%filter(author != "Sir") %>%
-    mutate(author = ifelse(str_detect(author, "^Psalm$"), "Psalms", author)) %>%filter(author != "Sir") %>%
-    mutate(author = ifelse(str_detect(author, "^Jer$"), "Jeremiah", author)) %>%filter(author != "Sir") %>%
-    mutate(author = ifelse(str_detect(author, "^Eccl$"), "Ecclesiastes", author)) %>%filter(author != "Sir") %>%
-    mutate(author = ifelse(str_detect(author, "^Lev$"), "Leviticus", author)) %>%filter(author != "Sir") %>%
-    mutate(author = ifelse(str_detect(author, "^Revel$"), "Revelations", author)) %>%filter(author != "Sir") %>%
-    mutate(author = ifelse(str_detect(author, "^Chron$"), "Chronicles", author)) %>%filter(author != "Sir") %>%
-    mutate(author = ifelse(str_detect(author, "^Cor$"), "Corinthians", author)) %>%filter(author != "Sir") %>%
-    mutate(author = ifelse(str_detect(author, "^Millon$"), "Milton", author)) %>%
-    mutate(author = ifelse(str_detect(author, "^Milion$"), "Milton", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^Ezek$"), "Ezekiel", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^Exod$"), "Exodus", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^Isa$"), "Isaiah", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^Psalm$"), "Psalms", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^Jer$"), "Jeremiah", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^Eccl$"), "Ecclesiastes", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^Lev$"), "Leviticus", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^Revel$"), "Revelations", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^Chron$"), "Chronicles", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^Cor$"), "Corinthians", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^Mil\\S+n$"), "Milton", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^Miiton$|^Mil$"), "Milton", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^Milt$"), "Milton", author)) %>%
     mutate(author = ifelse(str_detect(author, "^Swifi$"), "Swift", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^Gulliv"), "Swift", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^Dryd"), "Dryden", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^Add\\S+n$"), "Addison", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^Arbuth"), "Arbuthnot", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^L'E\\S+e$"), "L'Estrange", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^Brown$"), "Browne", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^Erown$"), "Browne", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^Add$|^Addis$|^Addif$"), "Addison", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^Par$|^Parad$"), "Spenser", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^Loc$|^Lock$|^Loike$"), "Locke", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^Educ\\S+n$"), "Locke", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^Hoo\\S+r$"), "Hooker", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^Hocker$|^Hoker$"), "Hooker", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^Hook"), "Hooker", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^Law$"), "Hooker", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^Pope"), "Pope", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^Sermon"), "South", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^Soutb"), "South", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^Bac$"), "Bacon", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^Bac\\S+n$"), "Bacon", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^Colour"), "Boyle", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^Lock"), "Locke", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^Watt"), "Watts", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^Clar$|^Clare"), "Clarendon", author)) %>%
+    filter(author != "Queen") %>%
+    filter(author != "Errours") %>%
+    filter(author != "Diet") %>%
+    filter(author != "Lost") %>%
+    filter(author != "Loft") %>%
     filter(author != "Err") %>%
     filter(author != "Hist") %>%
+    filter(author != "King") %>%
     filter(author != "Ess") %>%
     filter(author != "Serm") %>%
     filter(author != "Sat.") %>%
     filter(author != "Gov.") %>%
     filter(author != "Rev.") %>%
     filter(author != "Dec.") %>%
+    filter(author != "Sir") %>%
     filter(author != "The") 
   return(names)
 }
