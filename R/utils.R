@@ -198,7 +198,8 @@ clean_entries_johnson <- function(x) {
     group_by(new_name) %>%
     summarize(author = unique(new_name),
               n = sum(n)) %>%
-    arrange(-n)
+    arrange(-n) %>%
+    select(author, n)
   
   return(replacement_df)
   
