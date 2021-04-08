@@ -196,10 +196,11 @@ clean_entries_johnson <- function(x) {
   replacement_df <- replacement_df %>%
     mutate(new_name = ifelse(is.na(new_name), author, new_name)) %>%
     group_by(new_name) %>%
-    summarize(author = unique(new_name),
+    summarize(new_name = unique(new_name),
               n = sum(n)) %>%
-    arrange(-n) %>%
-    select(author, n)
+    select(new_name, n) %>%
+    rename(author = new_name) %>%
+    arrange(-n)
   
   return(replacement_df)
   
@@ -254,8 +255,7 @@ websters_cited <- function(x){
     mutate(author = ifelse(author == "Sir P. Sidney", "Sidney", author)) %>%
     group_by(author) %>%
     summarize(n = sum(n)) %>%
-    arrange(-n) %>%
-    rename(n_websters = n)
+    arrange(-n)
   
   return(authors)
 }
