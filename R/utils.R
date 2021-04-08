@@ -93,6 +93,7 @@ plot_year <- function(ngram_df, start=1800, end=2000) {
 # which are stored as html files.
 
 johnson_cited <- function(x){
+  
   names <- rvest::read_html(x) %>%
     rvest::html_nodes('body') %>%
     rvest::html_nodes('span') %>%
@@ -108,13 +109,13 @@ johnson_cited <- function(x){
     filter(str_detect(author, "[a-z]") ==T) %>%
     filter(str_detect(author, "^[A-Z][a-z][a-z]+|[A-Z]'[A-Z][a-z][a-z]+") ==T) %>%
     mutate(author = str_remove(author, "'s$")) %>%
-    mutate(author = ifelse(str_detect(author, "^Shak"), "Shakespeare", author)) %>%
     mutate(author = ifelse(str_detect(author, "peare$"), "Shakespeare", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^Shakesp$"), "Shakespeare", author)) %>%
     mutate(author = ifelse(str_detect(author, "^Lear$"), "Shakespeare", author)) %>%
     mutate(author = ifelse(str_detect(author, "^Othello$"), "Shakespeare", author)) %>%
     mutate(author = ifelse(str_detect(author, "^Tempest$"), "Shakespeare", author)) %>%
     mutate(author = ifelse(str_detect(author, "^Cymbeline$"), "Shakespeare", author)) %>%
-    mutate(author = ifelse(str_detect(author, "^Cymb$"), "Shakespeare", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^Hamlet$"), "Shakespeare", author)) %>%
     mutate(author = ifelse(str_detect(author, "^Macbeth$"), "Shakespeare", author)) %>%
     mutate(author = ifelse(str_detect(author, "^Paradise$"), "Milton", author)) %>%
     mutate(author = ifelse(str_detect(author, "^Fairy$"), "Spenser", author)) %>%
@@ -139,51 +140,68 @@ johnson_cited <- function(x){
     mutate(author = ifelse(str_detect(author, "^Revel$"), "Revelations", author)) %>%
     mutate(author = ifelse(str_detect(author, "^Chron$"), "Chronicles", author)) %>%
     mutate(author = ifelse(str_detect(author, "^Cor$"), "Corinthians", author)) %>%
-    mutate(author = ifelse(str_detect(author, "^Mil\\S+n$"), "Milton", author)) %>%
-    mutate(author = ifelse(str_detect(author, "^Miiton$|^Mil$"), "Milton", author)) %>%
-    mutate(author = ifelse(str_detect(author, "^Milt$"), "Milton", author)) %>%
-    mutate(author = ifelse(str_detect(author, "^Swifi$"), "Swift", author)) %>%
     mutate(author = ifelse(str_detect(author, "^Gulliv"), "Swift", author)) %>%
-    mutate(author = ifelse(str_detect(author, "^Dryd"), "Dryden", author)) %>%
-    mutate(author = ifelse(str_detect(author, "^Add\\S+n$"), "Addison", author)) %>%
-    mutate(author = ifelse(str_detect(author, "^Arbuth"), "Arbuthnot", author)) %>%
-    mutate(author = ifelse(str_detect(author, "^L'E\\S+e$"), "L'Estrange", author)) %>%
     mutate(author = ifelse(str_detect(author, "^Brown$"), "Browne", author)) %>%
-    mutate(author = ifelse(str_detect(author, "^Erown$"), "Browne", author)) %>%
-    mutate(author = ifelse(str_detect(author, "^Add$|^Addis$|^Addif$"), "Addison", author)) %>%
     mutate(author = ifelse(str_detect(author, "^Par$|^Parad$"), "Spenser", author)) %>%
-    mutate(author = ifelse(str_detect(author, "^Loc$|^Lock$|^Loike$"), "Locke", author)) %>%
     mutate(author = ifelse(str_detect(author, "^Educ\\S+n$"), "Locke", author)) %>%
-    mutate(author = ifelse(str_detect(author, "^Hoo\\S+r$"), "Hooker", author)) %>%
-    mutate(author = ifelse(str_detect(author, "^Hocker$|^Hoker$"), "Hooker", author)) %>%
-    mutate(author = ifelse(str_detect(author, "^Hook"), "Hooker", author)) %>%
     mutate(author = ifelse(str_detect(author, "^Law$"), "Hooker", author)) %>%
-    mutate(author = ifelse(str_detect(author, "^Pope"), "Pope", author)) %>%
     mutate(author = ifelse(str_detect(author, "^Sermon"), "South", author)) %>%
-    mutate(author = ifelse(str_detect(author, "^Soutb"), "South", author)) %>%
-    mutate(author = ifelse(str_detect(author, "^Bac$"), "Bacon", author)) %>%
-    mutate(author = ifelse(str_detect(author, "^Bac\\S+n$"), "Bacon", author)) %>%
-    mutate(author = ifelse(str_detect(author, "^Colour"), "Boyle", author)) %>%
-    mutate(author = ifelse(str_detect(author, "^Lock"), "Locke", author)) %>%
-    mutate(author = ifelse(str_detect(author, "^Watt"), "Watts", author)) %>%
-    mutate(author = ifelse(str_detect(author, "^Clar$|^Clare"), "Clarendon", author)) %>%
-    filter(author != "Queen") %>%
-    filter(author != "Errours") %>%
-    filter(author != "Diet") %>%
-    filter(author != "Lost") %>%
-    filter(author != "Loft") %>%
-    filter(author != "Err") %>%
-    filter(author != "Hist") %>%
-    filter(author != "King") %>%
-    filter(author != "Ess") %>%
-    filter(author != "Serm") %>%
-    filter(author != "Sat.") %>%
-    filter(author != "Gov.") %>%
-    filter(author != "Rev.") %>%
-    filter(author != "Dec.") %>%
-    filter(author != "Sir") %>%
-    filter(author != "The") 
+    mutate(author = ifelse(str_detect(author, "^Colour"), "Boyle", author))
+  
   return(names)
+}
+
+clean_entries <- function(x) {
+  bible_books <- read_csv("data/data_tables/bible_list.csv")
+  stop_words <- readLines("data/data_tables/stop_words.txt")
+  
+  cleaned_entries <- x %>% mutate(author = ifelse(!is.na(bible_books$source[match(cited_johnson$author, bible_books$book)]),
+                                                            bible_books$source[match(cited_johnson$author, bible_books$book)], author))   
+  
+  cleaned_entries <- cleaned_entries$author[!cleaned_entries$author %in% stop_words] %>% 
+    data.frame(author = ., stringsAsFactors = F)
+  
+  cleaned_entries <- cleaned_entries %>%
+    count(author) %>%
+    arrange(-n) %>%
+    mutate(name_length = str_count(author)) %>%
+    mutate(name_start = substring(author, 1, 4))
+  
+  replacement_df <- cleaned_entries %>%
+    group_by(name_start) %>%
+    top_n(1, n) %>%
+    rename(replacement = author) %>%
+    filter(n > 49) %>%
+    select(replacement, name_start) %>%
+    full_join(cleaned_entries) %>%
+    mutate(replacement = ifelse(is.na(replacement), author, replacement)) %>%
+    group_by(replacement) %>%
+    summarize(author = unique(replacement),
+              n = sum(n)) %>%
+    arrange(-n)
+  
+  reference_vector <- replacement_df$author[replacement_df$n >= 50]
+  check_names <- replacement_df$author[replacement_df$n < 50]
+  
+  correct_spelling <- function(word) {
+    edit_dist <- suppressWarnings(stringdist::stringdist(word, reference_vector, method = "jw"))
+    if(length(edit_dist[edit_dist < .2]) == 0) {return(NA)}
+    replacement <- reference_vector[ edit_dist == min(edit_dist)]
+    if(length(replacement) > 1) replacement <- replacement[1]
+    return(replacement)
+  }
+  
+  replacement_df$new_name <- c(reference_vector, sapply(check_names, correct_spelling) %>% unlist())
+  
+  replacement_df <- replacement_df %>%
+    mutate(new_name = ifelse(is.na(new_name), author, new_name)) %>%
+    group_by(new_name) %>%
+    summarize(author = unique(new_name),
+              n = sum(n)) %>%
+    arrange(-n)
+  
+  return(replacement_df)
+  
 }
 
 # Extract head words from Websters
