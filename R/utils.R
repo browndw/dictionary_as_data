@@ -151,7 +151,7 @@ johnson_cited <- function(x){
   return(names)
 }
 
-clean_entries <- function(x) {
+clean_entries_johnson <- function(x) {
   bible_books <- read_csv("data/data_tables/bible_list.csv")
   stop_words <- readLines("data/data_tables/stop_words.txt")
   
