@@ -92,7 +92,7 @@ plot_year <- function(ngram_df, start=1800, end=2000) {
 # This function extracts and cleans citation data from Johnson's dictionary,
 # which are stored as html files.
 
-extract_names <- function(x){
+johnson_cited <- function(x){
   html <- xml2::read_html(x)
   names <- rvest::html_text(rvest::html_nodes(html, 'span')) %>%
     data.frame(author = .) %>%
@@ -136,7 +136,7 @@ extract_names <- function(x){
 }
 
 # Extract head words from Websters
-extract_headwords <- function(x){
+headwords_websters <- function(x){
   
   doc <- read_file(x)
   doc<- doc %>% str_squish() %>% str_replace_all("</p>\\s+<p>", "</p><p>")
@@ -153,7 +153,7 @@ extract_headwords <- function(x){
 }
 
 # Extract cited authors from Websters
-extract_authors <- function(x){
+websters_cited <- function(x){
   
   doc <- read_file(x)
   doc<- doc %>% str_squish() %>% str_replace_all("</p>\\s+<p>", "</p><p>")
