@@ -223,8 +223,8 @@ headwords_websters <- function(x){
   return(words)
 }
 
-# Extract cited authors from Websters
-websters_cited <- function(x){
+# Extract cited authors from Websters Unabridged
+websters_cited_xml <- function(x){
   
   doc <- read_file(x)
   doc<- doc %>% str_squish() %>% str_replace_all("</p>\\s+<p>", "</p><p>")
@@ -261,3 +261,24 @@ websters_cited <- function(x){
   return(authors)
 }
 
+
+# Extract cited authors from Websters 1844
+websters_cited_df <- function(x){
+  citations <- str_extract(x$definition, "– [A-Z].*?\\.$") %>%
+    str_split(" – ") %>%
+    unlist() %>%
+    str_remove("– ") %>%
+    str_replace("( Dict.)", "_\\1") %>%
+    str_split("(?<=[a-z-][a-z-]\\.) (?=[A-Z][a-z-])") %>%
+    unlist() %>%
+    data.frame(author = .) %>%
+    mutate(author = str_remove(author, "– ")) %>%
+    mutate(author = ifelse(str_detect(author, " [i|v|x|l|c|d|m]+(\\.|,)"), "Bible", author)) %>%
+    mutate(author = str_remove(author, "'s .*?$")) %>%
+    mutate(author = str_remove(author, "\\.$")) %>%
+    mutate(author = ifelse(str_detect(author, "Farrier"), "Wallace", author)) %>%
+    mutate(author = ifelse(str_detect(author, "Shak"), "Shakespeare", author)) %>%
+    mutate(author = ifelse(str_detect(author, "^Brown$"), "Browne", author)) %>%
+    filter(str_count(author, " ") < 4)
+  return(citations)
+}
