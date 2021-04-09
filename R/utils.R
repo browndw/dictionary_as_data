@@ -239,7 +239,8 @@ websters_cited_xml <- function(x){
   authors <- authors %>% str_remove_all("<.*?>") %>% tolower()
   authors <- authors %>% unlist() %>% unname() %>% table() %>% as_tibble() %>% 
     rename_with(~ gsub(".", "author", .x, fixed = TRUE)) %>% 
-    mutate(author = str_remove(author, ".$")) %>%
+    mutate(author = textclean::replace_html(author)) %>%
+    mutate(author = str_remove(author, "\\.$")) %>%
     mutate(author = str_remove(author, "^[[:punct:]]")) %>%
     mutate(author = str_remove_all(author, "\\(.*?\\)")) %>%
     mutate(author = str_remove_all(author, "\\[.*?\\]")) %>%
@@ -248,7 +249,7 @@ websters_cited_xml <- function(x){
     mutate(author = ifelse(str_detect(author, "\\. \\d+"), "bible", author)) %>%
     mutate(author = ifelse(str_detect(author, "^\\d"), "bible", author)) %>%
     mutate(author = ifelse(str_detect(author, "^shak"), "shakespeare", author)) %>%
-    mutate(author = textclean::replace_html(author)) %>%
+    mutate(author = ifelse(str_detect(author, "Cyc"), "Cyc", author)) %>%
     mutate(author = str_to_title(author)) %>%
     mutate(author = ifelse(author == "L'estrange", "L'Estrange", author)) %>%
     mutate(author = ifelse(author == "Sir T. Browne", "Browne", author)) %>%
@@ -276,6 +277,7 @@ websters_cited_df <- function(x){
     mutate(author = ifelse(str_detect(author, " [i|v|x|l|c|d|m]+(\\.|,)"), "Bible", author)) %>%
     mutate(author = str_remove(author, "'s .*?$")) %>%
     mutate(author = str_remove(author, "\\.$")) %>%
+    mutate(author = str_replace_all(author, "_", " ")) %>%
     mutate(author = ifelse(str_detect(author, "Farrier"), "Wallace", author)) %>%
     mutate(author = ifelse(str_detect(author, "Shak"), "Shakespeare", author)) %>%
     mutate(author = ifelse(str_detect(author, "^Brown$"), "Browne", author)) %>%

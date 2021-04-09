@@ -11,30 +11,36 @@ cited_johnson <- johnson_cited(johnson_files[1])
 
 # Clean the data a little
 cited_johnson <- clean_entries_johnson(cited_johnson) %>%
-  rownames_to_column("rank_johnson") %>%
   rename(n_johnson = n)
 
 # Compare to the counts reported by Willinsky
 willinsky <- read_csv("data/data_tables/willinsky_counts.csv") %>%
   left_join(cited_johnson) %>%
-  mutate(error = (n_johnson - n_willinsky)/n_willinsky*100) %>%
-  filter(author != "Wallace")
+  mutate(error = (n_johnson - n_willinsky)/n_willinsky*100)
 
 # Calculate the mean error (assuming Willisky's counts are accurate)
-mean(willinsky$error)
+mean(willinsky$error, na.rm=TRUE)
 
 # Check the row for Bible citations
 cited_johnson[which(cited_johnson$author == "Bible"), ]
 
 # Calculate an adjusted value for Bible citations
-cited_johnson[which(cited_johnson$author == "Bible"), 3]*(1 + abs(mean(willinsky$error)/100))
+bible_adj <- (cited_johnson[which(cited_johnson$author == "Bible"), 2]*(1 + abs(mean(willinsky$error, na.rm=TRUE)/100))) %>% round() %>% as.numeric()
 
+willinsky <- willinsky %>%
+  select(author, n_willinsky) %>%
+  add_row(author = "Bible", n_willinsky = bible_adj)
+
+cited_johnson <- cited_johnson %>% 
+  mutate(n_johnson = ifelse(!is.na(willinsky$n_willinsky[match(cited_johnson$author, willinsky$author)]),
+                         willinsky$n_willinsky[match(cited_johnson$author, willinsky$author)], n_johnson)) %>%
+  rownames_to_column("rank_johnson")
 
 # Get the paths to the files containing Webster's Unabridged dictionary
 websters_files <- list.files("data/dictionary_data/websters/websters_1913/xml_files", pattern = "_\\w.xml", full.names = T)
 
 # Extract the authors with quotations in the dictionary
-cited_websters_1913 <- lapply(websters_files, websters_cited)
+cited_websters_1913 <- lapply(websters_files, websters_cited_xml)
 
 cited_websters_1913 <- bind_rows(cited_websters_1913) %>%
   group_by(author) %>%
@@ -43,22 +49,9 @@ cited_websters_1913 <- bind_rows(cited_websters_1913) %>%
   rownames_to_column("rank_websters_2")
 
 # Format and tally citations
-websters_1844 <- read_csv("data/dictionary_data/websters/websters_1841.csv")
+websters_1844 <- read_csv("data/dictionary_data/websters/websters_1844.csv")
 
-cited_websters_1844 <- str_extract(websters_1844$definition, "– [A-Z].*?\\.$") %>%
-  str_split(" – ") %>%
-  unlist() %>%
-  str_subset("Dict.|Cyc.|Encyc.", negate = T) %>%
-  str_split("(?<=[a-z-][a-z-]\\.) (?=[A-Z][a-z-])") %>%
-  unlist() %>%
-  data.frame(author = .) %>%
-  mutate(author = str_remove(author, "– ")) %>%
-  mutate(author = ifelse(str_detect(author, " [i|v|x|l|c|d|m]+(\\.|,)"), "Bible", author)) %>%
-  mutate(author = str_remove(author, "'s .*?$")) %>%
-  mutate(author = str_remove(author, "\\.$")) %>%
-  mutate(author = ifelse(str_detect(author, "Shak"), "Shakespeare", author)) %>%
-  mutate(author = ifelse(str_detect(author, "^Brown$"), "Browne", author)) %>%
-  filter(str_count(author, " ") < 4) %>%
+cited_websters_1844 <- websters_cited_df(websters_1844) %>%
   group_by(author) %>%
   tally() %>%
   arrange(-n) %>%
