@@ -10,6 +10,9 @@ johnson_files <- list.files("data/dictionary_data/johnson", pattern = "*.html", 
 cited_johnson <- johnson_cited(johnson_files[1])
 
 # Clean the data a little
+# Note this uses some VERY blunt tools: string distance & stemming
+# in order to partially account for error and variation.
+# The resulting counts are approximations.
 cited_johnson <- clean_entries_johnson(cited_johnson) %>%
   rename(n_johnson = n)
 
