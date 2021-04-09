@@ -38,7 +38,11 @@ willinsky <- willinsky %>%
 # Replace our counts with those from Willinsky
 cited_johnson <- cited_johnson %>% 
   mutate(n_johnson = ifelse(!is.na(willinsky$n_willinsky[match(cited_johnson$author, willinsky$author)]),
-                         willinsky$n_willinsky[match(cited_johnson$author, willinsky$author)], n_johnson)) %>%
+                         willinsky$n_willinsky[match(cited_johnson$author, willinsky$author)], n_johnson))
+
+cited_johnson <- cited_johnson %>% 
+  filter(!str_detect(author, ("Dict|Ency|Cyc"))) %>%
+  filter(n_johnson > 5) %>%
   rownames_to_column("rank_johnson")
 
 # Get the paths to the files containing Webster's Unabridged dictionary
@@ -52,6 +56,8 @@ cited_websters_1913 <- bind_rows(cited_websters_1913) %>%
   group_by(author) %>%
   summarize(n_websters_2 = sum(n)) %>%
   arrange(-n_websters_2) %>%
+  filter(!str_detect(author, ("Dict|Ency|Cyc"))) %>%
+  filter(n_websters_2 > 5) %>%
   rownames_to_column("rank_websters_2")
 
 # Extract citations
@@ -62,7 +68,9 @@ cited_websters_1844 <- websters_cited_df(websters_1844) %>%
   group_by(author) %>%
   tally() %>%
   arrange(-n) %>%
+  filter(!str_detect(author, ("Dict|Ency|Cyc"))) %>%
   rename(n_websters_1 = n) %>%
+  filter(n_websters_1 > 5) %>%
   rownames_to_column("rank_websters_1")
 
 # Combine counts into a single dataframe
