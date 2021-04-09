@@ -30,10 +30,12 @@ cited_johnson[which(cited_johnson$author == "Bible"), ]
 # Calculate an adjusted value for Bible citations
 bible_adj <- (cited_johnson[which(cited_johnson$author == "Bible"), 2]*(1 + abs(mean(willinsky$error, na.rm=TRUE)/100))) %>% round() %>% as.numeric()
 
+# Append the Bible counts to Willinsky's
 willinsky <- willinsky %>%
   select(author, n_willinsky) %>%
   add_row(author = "Bible", n_willinsky = bible_adj)
 
+# Replace our counts with those from Willinsky
 cited_johnson <- cited_johnson %>% 
   mutate(n_johnson = ifelse(!is.na(willinsky$n_willinsky[match(cited_johnson$author, willinsky$author)]),
                          willinsky$n_willinsky[match(cited_johnson$author, willinsky$author)], n_johnson)) %>%
@@ -45,15 +47,17 @@ websters_files <- list.files("data/dictionary_data/websters/websters_1913/xml_fi
 # Extract the authors with quotations in the dictionary
 cited_websters_1913 <- lapply(websters_files, websters_cited_xml)
 
+# Tally the counts
 cited_websters_1913 <- bind_rows(cited_websters_1913) %>%
   group_by(author) %>%
   summarize(n_websters_2 = sum(n)) %>%
   arrange(-n_websters_2) %>%
   rownames_to_column("rank_websters_2")
 
-# Format and tally citations
+# Extract citations
 websters_1844 <- read_csv("data/dictionary_data/websters/websters_1844.csv")
 
+# Tally them
 cited_websters_1844 <- websters_cited_df(websters_1844) %>%
   group_by(author) %>%
   tally() %>%
